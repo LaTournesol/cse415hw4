@@ -1,4 +1,4 @@
-''' AStar.py Changed 
+''' AStar.py
 TianYang Jin
 CSE 415, Spring 2016, University of Washington
 Instructor: S. Tanimoto.

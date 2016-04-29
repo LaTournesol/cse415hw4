@@ -22,24 +22,25 @@ except ImportError:
 
 Initial_State = importlib.import_module(sys.argv[3].split('.')[0])
 
-
 print("\nWelcome to AStar")
 COUNT = None
 BACKLINKS = {}
 
+
 def heuristic(s):
     heuristic_function = sys.argv[2]
-    if heuristic_function == 'h_euclidean':
-        return Problem.h_euclidean(s)
-    elif heuristic_function == 'h_hamming':
-        return Problem.h_hamming(s)
-    elif heuristic_function == 'h_manhattan':
-        return Problem.h_manhattan(s)
-    elif heuristic_function == 'h_custom':
-        return Problem.h_custom(s)
+    if heuristic_function == 'h_blocksInTheWay':
+        return Problem.h_blocksInTheWay(s)
+    elif heuristic_function == 'h_combined_min':
+        return Problem.h_combined_min(s)
+    elif heuristic_function == 'h_simple':
+        return Problem.h_simple(s)
+    elif heuristic_function == 'h_force':
+        return Problem.h_force(s)
     else:
         print("Invilid heuristic evaluation function.\n")
         quit()
+
 
 def runAStar():
     initial_state = Initial_State.CREATE_INITIAL_STATE()
@@ -49,7 +50,8 @@ def runAStar():
     COUNT = 0
     BACKLINKS = {}
     IterativeAStar(initial_state)
-    print(str(COUNT)+" states examined.")
+    print(str(COUNT) + " states examined.")
+
 
 def IterativeAStar(initial_state):
     global COUNT, BACKLINKS
@@ -63,44 +65,41 @@ def IterativeAStar(initial_state):
     while not OPEN.empty():
         (W, S) = OPEN.get()
         g_s = W - heuristic(S)
+        # print(Problem.DESCRIBE_STATE(S))
         OPEN_CP.remove(S)
         CLOSED.append(S)
 
         if Problem.GOAL_TEST(S):
             print(Problem.GOAL_MESSAGE_FUNCTION(S))
+            print(Problem.DESCRIBE_STATE(s))
             backtrace(S)
             return
+
         COUNT += 1
-        if (COUNT % 32)==0:
-            print(".",end="")
-            if (COUNT % 128)==0:
-                print("COUNT = "+str(COUNT))
-                print("len(OPEN)="+str(OPEN.qsize()))
-                print("len(CLOSED)="+str(len(CLOSED)))
+        if (COUNT % 32) == 0:
+            print(".", end="")
+            if (COUNT % 128) == 0:
+                print("COUNT = " + str(COUNT))
+                print("len(OPEN)=" + str(OPEN.qsize()))
+                print("len(CLOSED)=" + str(len(CLOSED)))
+                print(Problem.DESCRIBE_STATE(S))
         L = []
         for op in Problem.OPERATORS:
-            #Optionally uncomment the following when debugging
-            #a new problem formulation.
+            # Optionally uncomment the following when debugging
+            # a new problem formulation.
             # print("Trying operator: "+op.name)
             if op.precond(S):
                 new_state = op.state_transf(S)
                 if not occurs_in(new_state, CLOSED) and not occurs_in(new_state, OPEN_CP):
                     L.append(new_state)
                     BACKLINKS[Problem.HASHCODE(new_state)] = S
-                    #Uncomment for debugging:
+                    # Uncomment for debugging:
                     # print(Problem.DESCRIBE_STATE(new_state))
-        # rm = []
-        # for s2 in L:
-        #     for i in range(len(OPEN_CP)):
-        #         if Problem.DEEP_EQUALS(s2, OPEN_CP[i]):
-        #             rm = s2; break
-        #
-        # if len(rm) != 0:
-        #     L.remove(rm)
         for s in L:
             h_s = heuristic(s)
             OPEN.put((g_s + 1 + h_s, s))
         OPEN_CP = OPEN_CP + L
+
 
 def backtrace(S):
     global BACKLINKS
@@ -113,7 +112,7 @@ def backtrace(S):
     print("Solution path: ")
     for s in path:
         print(Problem.DESCRIBE_STATE(s))
-    print(len(path)-1)
+    print(len(path) - 1)
     return path
 
 
@@ -122,6 +121,6 @@ def occurs_in(s1, lst):
         if Problem.DEEP_EQUALS(s1, s2): return True
     return False
 
-if __name__=='__main__':
-    runAStar()
 
+if __name__ == '__main__':
+    runAStar()

@@ -1,21 +1,28 @@
 '''EightPuzzleWithHeuristics.py
-TianYang Jin
+TianYang Jin, Sheng Chen
+The problem being formulated is Sliding Blocks of 10 pieces. The pieces consists of four types, 1x1, 2x1, 1x2, and 2x2.
+Here is a rough drawing of the Initial state and a representation of the goal state:
+
+1 2 2 7                            . . . .
+1 2 2 8                            . . . .
+3 5 5 9            ------->        . . . .
+3 4 6 10                           . 2 2 .
+0 4 6 0                            . 2 2 .
+
+The goal of this game is to get the 2x2 block to the shown position, all other pieces' positions don't matter.
+But the piece can only move to an empty space (represented by 0) and it can only move if the space can fit.
+
+In this program, each state of the board is represented by a simple GUI interface produced using the package Tkinter.
+It took the ASar search algorithm about 160s to solve the problem using the 'combined_min' heuristic function, and it
+displays the solution path at then end using the same simple GUI interface.
+
 CSE 415, Spring 2016, University of Washington
 Instructor: S. Tanimoto.
-Assignment 3 Part II. Eight Puzzle with 4 different heuristics functions
-
-A QUIET Solving Tool problem formulation.
-QUIET = Quetzal User Intelligence Enhancing Technology.
-The XML-like tags used here serve to identify key sections of this
-problem formulation.
-
-CAPITALIZED constructs are generally present in any problem
-formulation and therefore need to be spelled exactly the way they are.
-Other globals begin with a capital letter but otherwise are lower
-case or camel case.
 '''
 
 import math
+from tkinter import *
+import time
 
 # <METADATA>
 QUIET_VERSION = "0.1"
@@ -23,16 +30,15 @@ PROBLEM_NAME = "Basic Eight Puzzle"
 PROBLEM_VERSION = "0.1"
 PROBLEM_AUTHORS = ['TianYang Jin']
 PROBLEM_CREATION_DATE = "18-APR-2016"
-PROBLEM_DESC = \
-    '''This formulation of the Basic Eight Puzzle problem uses generic
-    Python 3 constructs and has been tested with Python 3.4.
-    It is designed to work according to the QUIET tools interface.
-    '''
+#PROBLEM_DESC =
+# master = Tk()
+
 # </METADATA>
 
 # <COMMON_CODE>
 TYPES = {1: "2x1", 2: "2x2", 3: "2x1", 4: "2x1", 5: "1x2", 6: "2x1", 7: "1x1", 8: "1x1", 9: "1x1", 10: "1x1"}
-
+colors = {1: 'green', 2: 'red', 3: 'green', 4: 'green', 5: 'blue', 6: 'green', 7: 'wheat', 8: 'wheat', 9: 'wheat',
+          10: 'wheat', 0: 'white'}
 
 def DEEP_EQUALS(s1, s2):
     for i in range(0, len(s1)):
@@ -41,15 +47,30 @@ def DEEP_EQUALS(s1, s2):
     return True
 
 
-def DESCRIBE_STATE(state):
+def DESCRIBE_STATE(state, w):
     # Produces a textual description of a state.
     # Might not be needed in normal operation with GUIs.
+    w.delete('all')
     s = ''
     for i in range(R_size):
         for j in range(C_size):
             s += str(state[C_size * i + j]) + ' '
         s += '\n'
     return s
+    sqr_size = 50
+    for i in range(20):
+        x, y = to_2d(i)
+        xd = x * sqr_size
+        yd = y * sqr_size
+        xdd = xd + sqr_size
+        ydd = yd + sqr_size
+        color = colors[state[i]]
+        w.create_rectangle(xd, yd, xdd, ydd, fill=color, outline='black')
+        w.pack()
+        # w.update_idletasks()
+        # w.update()
+    w.update_idletasks()
+    w.update()
 
 
 def HASHCODE(s):
@@ -66,26 +87,6 @@ def copy_state(s):
     # for use by operators in creating new states.
     news = s[:]
     return news
-
-
-# def can_move(s, From, To):
-#     '''Tests whether it's legal to move a disk in state s
-#        from the From peg to the To peg.'''
-#     try:
-#         first = s[From[0]]
-#         for i in From:
-#             if s[i] != first:
-#                 return False
-#         X = []
-#         for item in To:
-#             if item not in From:
-#                 X.append(item)
-#         for x in X:
-#             if s[x] != 0:
-#                 return False
-#         return True
-#     except (Exception) as e:
-#         print(e)
 
 
 def can_move(s, From, To):
@@ -219,12 +220,6 @@ def h_force(s):
     if xc == 8 or xc == 10: return 1.5
     if xc == 12 or xc == 14: return 0.5
     if xc == 13: return 0
-
-
-def h_smallBlocksCloser(s):
-    xc, yc = to_2d(s.index(2))       # location of left upper left corner of the Cao's  block
-    xg, yg = 1, 4                    # location of the left block of the goal block
-    d = abs(xg - xc) + abs(yg - yc) - 1
 
 
 

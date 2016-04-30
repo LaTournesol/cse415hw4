@@ -1,14 +1,30 @@
-''' AStar.py
-TianYang Jin
+'''AStar.py
+TianYang Jin, Sheng Chen
+The problem being formulated is Sliding Blocks of 10 pieces. The pieces consists of four types, 1x1, 2x1, 1x2, and 2x2.
+Here is a rough drawing of the Initial state and a representation of the goal state:
+
+1 2 2 7                            . . . .
+1 2 2 8                            . . . .
+3 5 5 9            ------->        . . . .
+3 4 6 10                           . 2 2 .
+0 4 6 0                            . 2 2 .
+
+The goal of this game is to get the 2x2 block to the shown position, all other pieces' positions don't matter.
+But the piece can only move to an empty space (represented by 0) and it can only move if the space can fit.
+
+In this program, each state of the board is represented by a simple GUI interface produced using the package Tkinter.
+It took the ASar search algorithm about 160s to solve the problem using the 'combined_min' heuristic function, and it
+displays the solution path at then end using the same simple GUI interface.
+
 CSE 415, Spring 2016, University of Washington
 Instructor: S. Tanimoto.
-Assignment 3 Part II. AStar Search
-
 '''
 
 import sys
 import queue as Q
 import importlib
+from tkinter import *
+import time
 
 if len(sys.argv) != 4:
     print("Invalid parameter size.\n")
@@ -25,7 +41,10 @@ Initial_State = importlib.import_module(sys.argv[3].split('.')[0])
 print("\nWelcome to AStar")
 COUNT = None
 BACKLINKS = {}
-
+master = Tk()
+w = Canvas(master, width=300, height=300)
+# colors = {1: 'green', 2: 'red', 3: 'green', 4: 'green', 5: 'blue', 6: 'green', 7: 'wheat', 8: 'wheat', 9: 'wheat',
+#           10: 'wheat', 0: 'white'}
 
 def heuristic(s):
     heuristic_function = sys.argv[2]
@@ -45,7 +64,7 @@ def heuristic(s):
 def runAStar():
     initial_state = Initial_State.CREATE_INITIAL_STATE()
     print("Initial State:")
-    print(Problem.DESCRIBE_STATE(initial_state))
+    Problem.DESCRIBE_STATE(initial_state, w)
     global COUNT, BACKLINKS
     COUNT = 0
     BACKLINKS = {}
@@ -71,7 +90,7 @@ def IterativeAStar(initial_state):
 
         if Problem.GOAL_TEST(S):
             print(Problem.GOAL_MESSAGE_FUNCTION(S))
-            print(Problem.DESCRIBE_STATE(s))
+            # Problem.DESCRIBE_STATE(s, w)
             backtrace(S)
             return
 
@@ -82,7 +101,7 @@ def IterativeAStar(initial_state):
                 print("COUNT = " + str(COUNT))
                 print("len(OPEN)=" + str(OPEN.qsize()))
                 print("len(CLOSED)=" + str(len(CLOSED)))
-                print(Problem.DESCRIBE_STATE(S))
+                #print(Problem.DESCRIBE_STATE(S))
         L = []
         for op in Problem.OPERATORS:
             # Optionally uncomment the following when debugging
@@ -111,7 +130,8 @@ def backtrace(S):
     path.reverse()
     print("Solution path: ")
     for s in path:
-        print(Problem.DESCRIBE_STATE(s))
+        Problem.DESCRIBE_STATE(s, w)
+        time.sleep(0.08)
     print(len(path) - 1)
     return path
 
@@ -123,4 +143,7 @@ def occurs_in(s1, lst):
 
 
 if __name__ == '__main__':
+    start_time = time.clock()
     runAStar()
+    finish_time = time.clock()
+    print('Duration: ' + str(finish_time - start_time))
